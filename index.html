@@ -563,6 +563,46 @@
         bottom: calc(100% + 18px);
         z-index: 12;
       }
+      .sound-toggle-btn {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 3px);
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 28px;
+        padding: 3px;
+        border: 1px solid #806b48;
+        border-radius: 6px;
+        background: #2d2a24;
+        cursor: pointer;
+        transform: translateX(-50%);
+      }
+      .sound-toggle-btn svg {
+        transition: filter 0.18s ease, opacity 0.18s ease;
+      }
+      .sound-toggle-btn[aria-pressed="false"] {
+        border-color: #4d4a44;
+      }
+      .sound-toggle-btn[aria-pressed="false"] svg {
+        filter: grayscale(1);
+        opacity: 0.55;
+      }
+      .sound-toggle-btn:focus-visible {
+        outline: 2px solid #e1bd77;
+        outline-offset: 3px;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
       .ink-bottle-btn {
         display: flex;
         flex-direction: column;
@@ -710,6 +750,18 @@
       <!-- 2. 나이트 램프 레일 & 슬라이더 컨트롤 -->
       <div class="lamp-assembly" id="lampAssembly">
         <div class="ink-station" id="inkStation">
+          <button type="button" class="sound-toggle-btn" id="soundToggleBtn"
+            aria-label="타자기 소리" aria-pressed="true" aria-describedby="soundStatus"
+            title="타자기 소리 켜짐">
+            <svg width="25" height="20" viewBox="0 0 25 20" aria-hidden="true">
+              <path fill="#e4d3ad" d="M7 0h11v6H7z" />
+              <path fill="#b77b3d" d="M3 5h19a3 3 0 0 1 3 3v7H0V8a3 3 0 0 1 3-3Z" />
+              <path fill="#3b3329" d="M4 9h17v8H4z" />
+              <path fill="#d7b56f" d="M2 14h21l-2 6H4z" />
+              <path fill="#55432e" d="M6 16h13v2H6z" />
+            </svg>
+          </button>
+          <span class="sr-only" id="soundStatus" aria-live="polite">타자기 소리 켜짐</span>
           <button type="button" class="ink-bottle-btn" id="inkBottleBtn"
             aria-label="잉크병: 글자 크기 조절" aria-expanded="false" aria-controls="inkSizePanel">
             <span class="ink-bottle" aria-hidden="true"><span class="ink-bottle-label">INK</span></span>
@@ -1317,6 +1369,9 @@
       const impactToggle = document.getElementById("impactToggle");
       const charCountEl = document.getElementById("charCount");
       const lineCountEl = document.getElementById("lineCount");
+      const soundToggleBtn = document.getElementById("soundToggleBtn");
+      const soundStatus = document.getElementById("soundStatus");
+      let isTypingSoundOn = true;
       const reducedMotionQuery = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       );
@@ -1439,10 +1494,22 @@
       document.fonts.ready.then(() => updateScreen());
       document.fonts.addEventListener("loadingdone", () => updateScreen());
 
+      function setTypingSoundEnabled(enabled) {
+        isTypingSoundOn = enabled;
+        const stateText = enabled ? "타자기 소리 켜짐" : "타자기 소리 꺼짐";
+        soundToggleBtn.setAttribute("aria-pressed", String(enabled));
+        soundToggleBtn.title = stateText;
+        soundStatus.textContent = stateText;
+      }
+      soundToggleBtn.addEventListener("click", () => {
+        setTypingSoundEnabled(!isTypingSoundOn);
+        desk.focus();
+      });
+
       // 키 하나 처리. 자모, 문장부호, 'BACK', ' ', 'Enter'
       function handleKey(k) {
         if (k === "BACK") {
-          sound.playKeyClick(false);
+          if (isTypingSoundOn) sound.playKeyClick(false);
           triggerStrike();
           if (!automata.backspace()) {
             committedStr = committedStr.slice(0, -1);
@@ -1452,7 +1519,7 @@
         }
 
         if (k === " ") {
-          sound.playKeyClick(true);
+          if (isTypingSoundOn) sound.playKeyClick(true);
           triggerStrike();
           committedStr += automata.flush() + " ";
           updateScreen();
@@ -1460,14 +1527,14 @@
         }
 
         if (k === "Enter") {
-          sound.playReturnBell();
+          if (isTypingSoundOn) sound.playReturnBell();
           triggerStrike();
           committedStr += automata.flush() + "\n";
           updateScreen();
           return;
         }
 
-        sound.playKeyClick(false);
+        if (isTypingSoundOn) sound.playKeyClick(false);
         triggerStrike();
 
         const res = automata.inputJamo(k);
