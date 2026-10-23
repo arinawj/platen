@@ -66,19 +66,31 @@
         position: relative;
         flex: 1;
         width: 100%;
-        background-color: #d2c9b6;
+        background-color: #292722;
+        background-image:
+          radial-gradient(ellipse at 17% 23%, rgba(103, 96, 80, 0.7) 0 3%, rgba(54, 51, 44, 0.5) 9%, rgba(24, 23, 20, 0.72) 18%, transparent 29%),
+          radial-gradient(ellipse at 76% 16%, rgba(79, 74, 63, 0.66) 0 5%, rgba(34, 32, 28, 0.72) 15%, transparent 27%),
+          radial-gradient(ellipse at 58% 72%, rgba(96, 88, 73, 0.52) 0 4%, rgba(40, 37, 32, 0.68) 14%, transparent 30%),
+          radial-gradient(ellipse at 9% 81%, rgba(72, 68, 58, 0.58) 0 6%, rgba(28, 27, 24, 0.74) 17%, transparent 31%),
+          linear-gradient(137deg, #39362f 0%, #211f1c 38%, #464137 65%, #24221e 100%);
+        box-shadow:
+          inset 0 0 90px rgba(7, 7, 6, 0.92),
+          inset 22px 18px 45px rgba(177, 160, 126, 0.09),
+          inset -28px -22px 52px rgba(0, 0, 0, 0.62);
         overflow: hidden;
         cursor: text;
       }
 
-      /* 종이 질감 노이즈 레이어 */
+      /* 암벽의 큰 굴곡 위에 미세한 돌 표면 요철을 더한다. */
       .paper-texture {
         position: absolute;
         inset: 0;
-        opacity: 0.36;
+        opacity: 0.68;
         pointer-events: none;
-        z-index: 2;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.55'/%3E%3C/svg%3E");
+        z-index: 0;
+        mix-blend-mode: hard-light;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='caveWallNoise' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.018 0.035' numOctaves='5' seed='7' result='noise'/%3E%3CfeDiffuseLighting in='noise' surfaceScale='9' diffuseConstant='1.15' lighting-color='%23c8b994' result='light'%3E%3CfeDistantLight azimuth='225' elevation='32'/%3E%3C/feDiffuseLighting%3E%3CfeComposite in='light' in2='noise' operator='in' result='relief'/%3E%3CfeBlend in='SourceGraphic' in2='relief' mode='multiply'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%236b6455' filter='url(%23caveWallNoise)'/%3E%3C/svg%3E");
+        background-size: 240px 240px;
       }
 
       /* 조명 위에 그리되 종이와 같은 transform 으로 움직여, 줄바꿈 때도 입력 위치에 붙어 있게 한다 */
@@ -111,17 +123,18 @@
         animation: typeImpactPop 420ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
       }
 
-      .type-impact-particle {
+      .type-impact-dust {
         position: absolute;
         top: 50%;
         left: 50%;
         width: var(--size);
         height: var(--size);
-        border-radius: 50%;
-        background: #1e1a15;
+        border-radius: 1px;
+        background: #b7aa8e;
+        box-shadow: 0 0 2px rgba(234, 220, 183, 0.45);
         transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0)
           scale(1);
-        animation: typeImpactParticle 420ms cubic-bezier(0.2, 0.8, 0.3, 1)
+        animation: typeImpactDust 420ms cubic-bezier(0.2, 0.8, 0.3, 1)
           forwards;
       }
 
@@ -136,7 +149,7 @@
         }
       }
 
-      @keyframes typeImpactParticle {
+      @keyframes typeImpactDust {
         0% {
           transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0)
             scale(1);
@@ -165,7 +178,11 @@
           animation: none;
         }
 
-        .type-impact-particle {
+        .type-impact-dust {
+          animation: none;
+        }
+
+        #cursorAnchor::before {
           animation: none;
         }
       }
@@ -180,7 +197,8 @@
         font-family: "Gowun Batang", "Nanum Myeongjo", serif;
         font-size: 18px;
         line-height: 30px;
-        color: #1e1a15;
+        color: #d8ceb5;
+        text-shadow: 1px 1px 0 #706651, -0.5px -0.5px 0 rgba(246, 235, 204, 0.45), 0 0 0.8px rgba(238, 224, 188, 0.75);
         letter-spacing: -0.01em;
         transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
         z-index: 1;
@@ -189,18 +207,42 @@
       }
 
       .ink-text {
-        text-shadow: 0 0 0.6px rgba(25, 20, 15, 0.55);
+        text-shadow: 1px 1px 0 #706651, -0.5px -0.5px 0 rgba(246, 235, 204, 0.45), 0 0 0.8px rgba(238, 224, 188, 0.75);
       }
 
       .composing-char {
-        text-shadow: 0 0 0.9px rgba(0, 0, 0, 0.85);
+        text-shadow: 1px 1px 0 #706651, -0.5px -0.5px 0 rgba(246, 235, 204, 0.45), 0 0 0.8px rgba(238, 224, 188, 0.75);
       }
 
       #cursorAnchor {
         display: inline-block;
-        width: 2px;
-        height: 20px;
+        position: relative;
+        width: 18px;
+        height: 22px;
         vertical-align: text-bottom;
+      }
+
+      #cursorAnchor::before {
+        content: "";
+        position: absolute;
+        left: 1px;
+        bottom: 0;
+        width: 16px;
+        height: 19px;
+        background:
+          radial-gradient(circle at 28% 30%, rgba(239, 226, 191, 0.85) 0 8%, transparent 9%),
+          radial-gradient(circle at 68% 62%, rgba(54, 49, 42, 0.65) 0 13%, transparent 14%),
+          linear-gradient(145deg, #c7b58d 0 18%, #7b715e 19% 48%, #a29477 49% 68%, #4b453c 69%);
+        clip-path: polygon(42% 0, 78% 10%, 100% 38%, 82% 66%, 58% 100%, 38% 82%, 9% 91%, 0 55%, 13% 24%);
+        filter:
+          drop-shadow(2px 2px 1px rgba(15, 14, 12, 0.85))
+          drop-shadow(-1px -1px 0 rgba(222, 207, 170, 0.28));
+        animation: stoneCursorPulse 1.15s ease-in-out infinite alternate;
+      }
+
+      @keyframes stoneCursorPulse {
+        from { opacity: 0.7; transform: translateY(1px); }
+        to { opacity: 1; transform: translateY(-1px); }
       }
 
       /* 나이트 램프 어둠 & 콘 라이트 오버레이 */
@@ -1407,7 +1449,7 @@
 
         for (let index = 0; index < 4; index += 1) {
           const particle = document.createElement("span");
-          particle.className = "type-impact-particle";
+          particle.className = "type-impact-dust";
           particle.style.setProperty(
             "--angle",
             `${index * 90 + (Math.random() * 20 - 10)}deg`,
